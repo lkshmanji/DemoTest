@@ -1,0 +1,525 @@
+mport com.hoc.crudhb.entity.Customer;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public class CustomerDaoImpl implements CustomerDao {
+  private final SessionFactory sessionFactory;
+
+  @Autowired
+  public CustomerDaoImpl(SessionFactory sessionFactory) {
+    this.sessionFactory = sessionFactory;
+  }
+
+  @Override
+  public List<Customer> getAllCustomers() {
+    return sessionFactory
+        .getCurrentSession()
+        .createQuery("from Customer", Customer.class)
+        .getResultList();
+  }
+
+  @Override
+  public void deleteCustomerById(long id) {
+    final Session session = sessionFactory.getCurrentSession();
+    final Customer customer = session.load(Customer.class, id);
+    session.remove(customer);
+  }
+
+  @Override
+  public void addCustomer(Customer customer) {
+    sessionFactory.getCurrentSession().save(customer);
+  }
+
+  @Override
+  public Customer findById(long id) {
+    return sessionFactory.getCurrentSession().get(Customer.class, id);
+  }
+
+  @Override
+  public void update(Customer customer) {
+    sessionFactory.getCurrentSession().update(customer);
+  }
+
+}
+
+
+
+public interface CustomerDao {
+  List<Customer> getAllCustomers();
+
+  void deleteCustomerById(long id);
+
+  void addCustomer(Customer customer);
+
+  Customer findById(long id);
+
+  void update(Customer customer);
+}
+
+
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class CustomerService {
+  private final CustomerDao customerDao;
+
+  @Autowired
+  public CustomerService(CustomerDao customerDao) {
+    this.customerDao = customerDao;
+  }
+
+  public List<Customer> getAllCustomers() {
+    return customerDao.getAllCustomers();
+  }
+
+  public void deleteCustomerById(long id) {
+    customerDao.deleteCustomerById(id);
+  }
+
+  public void addCustomer(Customer customer) {
+    customerDao.addCustomer(customer);
+  }
+
+  public Customer findById(long id) {
+    return customerDao.findById(id);
+  }
+
+  public void updateCustomer(Customer customer) {
+    customerDao.update(customer);
+  }
+}
+
+
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Add customer</title>
+
+    <link href="<c:url value="/resources/bootstrap/css/bootstrap.min.css" />" rel="stylesheet">
+    <script src="<c:url value="/resources/bootstrap/js/jquery-3.2.1.min.js" />"></script>
+    <script src="<c:url value="/resources/bootstrap/js/bootstrap.min.js" />"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-header text-center font-weight-bold text-uppercase py-4">Add customers</h3>
+        </div>
+        <div class="card-body">
+            <form:form method="post" action="/add-customer" modelAttribute="customer">
+
+                <div class="form-group">
+                    <form:label for="inputFirstName" path="firstName">First name: </form:label>
+                    <form:input type="text" class="form-control" id="inputFirstName" placeholder="First name"
+                                path="firstName"/>
+                </div>
+
+                <div class="form-group">
+                    <form:label for="inputLastName" path="lastName">Last name: </form:label>
+                    <form:input type="text" class="form-control" id="inputLastName" placeholder="Last name"
+                                path="lastName"/>
+                </div>
+
+                <div class="form-group">
+                    <form:label for="inputEmail" path="email">Email: </form:label>
+                    <form:input type="email" class="form-control" id="inputEmail" placeholder="Email"
+                                path="email"/>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form:form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+
+
+
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<html>
+<head>
+    <title>Customers</title>
+
+    <link href="<c:url value="/resources/bootstrap/css/bootstrap.min.css" />" rel="stylesheet">
+    <link href="<c:url value="/resources/fontawesome/css/fontawesome.min.css" />" rel="stylesheet">
+    <script src="<c:url value="/resources/bootstrap/js/jquery-3.2.1.min.js" />"></script>
+    <script src="<c:url value="/resources/bootstrap/js/bootstrap.min.js" />"></script>
+
+    <style>
+        .pt-3-half {
+            padding-top: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-header text-center font-weight-bold text-uppercase py-4">Customers</h3>
+        </div>
+
+        <a href="<c:url value="/add-customer"/>" class="btn btn-primary float-right">Add customer</a>
+
+        <div class="card-body">
+            <table class="table table-striped table-hover table-bordered table-responsive-md text-center">
+                <thead class="thead-light">
+                <tr>
+                    <th scope="col" class="text-center">Id</th>
+                    <th scope="col" class="text-center">First name</th>
+                    <th scope="col" class="text-center">Last name</th>
+                    <th scope="col" class="text-center">Email</th>
+                    <th scope="col" class="text-center">Delete</th>
+                    <th scope="col" class="text-center">Update</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <c:forEach items="${customers}" var="customer">
+                <tr>
+                    <th class="pt-3-half" scope="row">${customer.id}</th>
+                    <td class="pt-3-half">${customer.firstName}</td>
+                    <td class="pt-3-half">${customer.lastName}</td>
+                    <td class="pt-3-half">${customer.email}</td>
+                    <td>
+                        <a type="button" class="btn btn-danger btn-sm my-0"
+                           href="<c:url value="/delete-customer/${customer.id}"  />">Remove</a>
+                    </td>
+                    <td>
+                        <a type="button" class="btn btn-default btn-sm my-0"
+                           href="<c:url value="/update-customer/${customer.id}"  />">Update</a>
+                    </td>
+                </tr>
+                </c:forEach>
+                <tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Update customer</title>
+
+    <link href="<c:url value="/resources/bootstrap/css/bootstrap.min.css" />" rel="stylesheet">
+    <script src="<c:url value="/resources/bootstrap/js/jquery-3.2.1.min.js" />"></script>
+    <script src="<c:url value="/resources/bootstrap/js/bootstrap.min.js" />"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-header text-center font-weight-bold text-uppercase py-4">Edit customers</h3>
+        </div>
+        <div class="card-body">
+            <form:form method="post" action="/update-customer" modelAttribute="customer">
+
+                <div class="form-group">
+                    <form:label for="inputFirstName" path="firstName">First name: </form:label>
+                    <form:input type="text" class="form-control" id="inputFirstName" placeholder="First name"
+                                path="firstName"/>
+                </div>
+
+                <div class="form-group">
+                    <form:label for="inputLastName" path="lastName">Last name: </form:label>
+                    <form:input type="text" class="form-control" id="inputLastName" placeholder="Last name"
+                                path="lastName"/>
+                </div>
+
+                <div class="form-group">
+                    <form:label for="inputEmail" path="email">Email: </form:label>
+                    <form:input type="email" class="form-control" id="inputEmail" placeholder="Email"
+                                path="email"/>
+                </div>
+
+                <form:input type="hidden" id="id" path="id"/>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form:form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+         http://www.springframework.org/schema/mvc/spring-mvc.xsd
+          http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!-- Add support for conversion, formatting and validation support -->
+    <mvc:annotation-driven/>
+
+    <!-- Add support for reading web resources: css, images, js, etc ... -->
+    <mvc:resources mapping="/resources/**" location="/resources/"/>
+
+    <!-- Add support for component scanning -->
+    <context:component-scan base-package="com.hoc.crudhb"/>
+
+    <!-- Define Spring MVC view resolver -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+
+
+
+
+
+
+
+
+
+
+
+    </bean>
+
+</beans>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Autowired
+	private ContactService contactService;
+
+	@RequestMapping("/editredirect/{contactId}")
+	public String contactinfo(@PathVariable("contactId") Integer id, ModelMap modelMap){
+		Contact Contactinfo = contactService.selectContactById(id);
+		modelMap.put("contact", Contactinfo);
+		return "contact_info";
+	}
+	
+	@RequestMapping(value = "/editredirect/update", method = RequestMethod.POST)
+	public String updateContact(@ModelAttribute("contact") Contact contact , BindingResult result){
+		contactService.updateContact(contact);
+		return "redirect:/";
+	}
+	
+	@RequestMapping("/")
+	public String listContacts(ModelMap modelMap) {
+		modelMap.put("contact", new Contact());
+		modelMap.put("contactList", contactService.listContact());
+		
+		return "contact";
+	}
+
+	@RequestMapping(value = "add", method = RequestMethod.POST)
+	public String addContact(@ModelAttribute("contact") Contact contact, BindingResult result) {
+		contactService.addContact(contact);
+		return "redirect:/";
+	}
+
+	@RequestMapping(value = "delete", method = RequestMethod.POST)
+	public void deleteContact(@RequestParam("id") Integer contactId, HttpServletResponse response) {
+		try {
+			contactService.removeContact(contactId);
+			response.setContentType("text/json; charset=UTF-8");
+			response.getWriter().print("{\"del\":\"true\"}");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Controller
+@RequestMapping("/contact")
+public class ContactController {
+
+	@Autowired
+	private ContactService contactService;
+
+	// ******************* Read Method *********************
+
+	@RequestMapping(method = RequestMethod.GET)
+	public String listContact(ModelMap model) {
+
+		model.addAttribute("contact", new Contact());
+		model.addAttribute("contactList", contactService.listContact());
+		return "contact/list";
+	}
+
+	// ******************* Create Methods *********************
+
+	@RequestMapping(value = "/add", method = RequestMethod.GET)
+	public String addContactGet(ModelMap model) {
+
+		model.addAttribute("contact", new Contact());
+		return "contact/add";
+	}
+
+	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	public String addContactPost(
+			@Valid @ModelAttribute("contact") Contact contact,
+			BindingResult result, ModelMap model) {
+
+		if (!result.hasErrors()) {
+			contactService.addContact(contact);
+			model.addAttribute("message", "Contact was successfully added.");
+			model.addAttribute("errorType", "info");
+			return "contact/add";
+		} else {
+			model.addAttribute("message", "Error adding a contact.");
+			model.addAttribute("errorType", "danger");
+			return "contact/add";
+		}
+	}
+
+	// ******************* Update Methods *********************
+
+	@RequestMapping(value = "/edit/{contactId}", method = RequestMethod.GET)
+	public String editContactGet(@PathVariable("contactId") Integer contactId,
+			ModelMap model) {
+
+		model.addAttribute("contact", contactService.getContact(contactId));
+		return "contact/edit";
+	}
+
+	@RequestMapping(value = "/edit/{contactId}", method = RequestMethod.POST)
+	public String editContactPost(@PathVariable("contactId") Integer contactId,
+			@Valid @ModelAttribute("contact") Contact contact,
+			BindingResult result, ModelMap model) {
+
+		if (!result.hasErrors()) {
+			contact.setId(contactId);
+			contactService.updateContact(contact);
+			model.addAttribute("message", "Contact was successfully edited.");
+			model.addAttribute("errorType", "info");
+			return "contact/edit";
+		} else {
+			model.addAttribute("message", "Error editing a contact.");
+			model.addAttribute("errorType", "danger");
+			return "contact/edit";
+		}
+
+	}
+
+	// ******************* Delete Method *********************
+
+	@RequestMapping("/delete/{contactId}")
+	public String deleteContact(@PathVariable("contactId") Integer contactId) {
+
+		contactService.removeContact(contactId);
+		return "redirect:/contact";
+	}
+
+	// ******************* Search Method *********************
+
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public String searchContactGet(@RequestParam String email, ModelMap model) {
+
+		if (email.equals("")) {
+			return "redirect:/contact";
+		} else {
+			Contact contact = contactService.searchContact("email = '" + email + "'");
+			return "redirect:/contact/edit/" + contact.getId();
+		}
+	}
+
+	// ******************* AutoComplete Methods *********************
+
+	@RequestMapping(value = "/getEmailTags", method = RequestMethod.GET)
+	public @ResponseBody
+	List<Contact> getTags(@RequestParam String getEmail) {
+
+		List<Contact> result = new ArrayList<Contact>();
+
+		for (Contact contact : contactService.listContact()) {
+			if (contact.getEmail().contains(getEmail)) {
+				result.add(contact);
+			}
+		}
+
+		return result;
+
+	}
+
+}
+
+

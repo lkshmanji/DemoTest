@@ -1,0 +1,51 @@
+show databases;
+use lakshmandb;
+show tables;
+select * from product;
+select pname ,pcost from product;
+delete from product where pid=101;
+select * from product;
+select product.pcost,product.plocation,emptab.email,emptab.emob from product join emptab;
+select product.pcost,product.plocation,emptab.email,emptab.emob from product join emptab where product.pid=emptab.pid;
+
+select pid,pcost,email,emob from product,emptab where product.pid=emptab.pid;
+
+
+select * from product;
+select * from emptab;
+select * from product,emptab;
+select pid,pcost,email,emob from product p inner join emptab e on p.pid=e.pid;
+
+create table product (pid int,pname varchar(60) not null,pcost varchar(10),plocation varchar(90),pcode varchar(9));
+insert into product(pid,pname,pcost,plocation,pcode) values(102,'nokia','3000','BPL1','AA1gr01');
+insert into product(pid,pname,pcost,plocation,pcode) values(103,'namibiya','5000','BPL2','AAg101');
+insert into product(pid,pname,pcost,plocation,pcode) values(104,'nokia','3000','BPL3','AAg101');
+insert into product(pid,pname,pcost,plocation,pcode) values(105,'nokia','8000','BPL4','AAg101');
+insert into product(pid,pname,pcost,plocation,pcode) values(106,'sumsung','3000','BPL5','AAg101');
+insert into product(pid,pname,pcost,plocation,pcode) values(107,'nokia','2000','BPL6','AAgh101');
+insert into product(pid,pname,pcost,plocation,pcode) values(103,'nokia','4000','BPL7','AAhj101');
+insert into product(pid,pname,pcost,plocation,pcode) values(108,'zolo','4000','BPL7','AAhj101');
+insert into product(pid,pname,pcost,plocation,pcode) values(103,'nokia','4000','BPL7','AAhj101');
+insert into product(pid,pname,pcost,plocation,pcode) values(109,'micromax','4000','BPL7','AAhj101');
+
+select * from product;
+create table user (uid int,uname varchar(30),email varchar(70), umobNum varchar(15) ,pid int);
+desc user;
+select * from user;
+
+insert into user(uid,uname,email,umobNum,pid) values(201,'AA','AA@gmail.com','6676756787',101);
+insert into user(uid,uname,email,umobNum,pid) values(202,'AA','TT@gmail.com','6676787787',106);
+insert into user(uid,uname,email,umobNum,pid) values(203,'AA','BB@gmail.com','66767787',101);
+insert into user(uid,uname,email,umobNum,pid) values(204,'AA','AA@gmail.com','665767787',102);
+insert into user(uid,uname,email,umobNum,pid) values(205,'AA','CC@gmail.com','667675787',101);
+insert into user(uid,uname,email,umobNum,pid) values(206,'AA','AA@gmail.com','66767567857',105);
+insert into user(uid,uname,email,umobNum,pid) values(207,'AA','AA@gmail.com','66767787',108);
+insert into user(uid,uname,email,umobNum,pid) values(208,'AA','PK@gmail.com','6676776787',107);
+insert into user(uid,uname,email,umobNum,pid) values(209,'AA','AA@gmail.com','6676776787',107);
+insert into user(uid,uname,email,umobNum,pid) values(210,'AA','MN@gmail.com','6676776787',107);
+
+select * from user;
+
+select pname ,pcost,uname, email from product p inner join User u on p.pid=u.pid;
+
+select * from product inner join user;

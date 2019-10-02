@@ -1,0 +1,157 @@
+Optimastic lock
+second Level cashe activate
+criteria 
+n+1 problems
+
+
+
+
+myehcache.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="true"
+	monitoring="autodetect" dynamicConfig="true">
+
+	<diskStore path="java.io.tmpdir/ehcache" />
+
+	<defaultCache maxEntriesLocalHeap="10000" eternal="false"
+		timeToIdleSeconds="120" timeToLiveSeconds="120" diskSpoolBufferSizeMB="30"
+		maxEntriesLocalDisk="10000000" diskExpiryThreadIntervalSeconds="120"
+		memoryStoreEvictionPolicy="LRU" statistics="true">
+		<persistence strategy="localTempSwap" />
+	</defaultCache>
+
+	<cache name="student" maxEntriesLocalHeap="10000" eternal="false"
+		timeToIdleSeconds="5" timeToLiveSeconds="10">
+		<persistence strategy="localTempSwap" />
+	</cache>
+
+	<cache name="org.hibernate.cache.internal.StandardQueryCache"
+		maxEntriesLocalHeap="5" eternal="false" timeToLiveSeconds="120">
+		<persistence strategy="localTempSwap" />
+	</cache>
+
+	<cache name="org.hibernate.cache.spi.UpdateTimestampsCache"
+		maxEntriesLocalHeap="5000" eternal="true">
+		<persistence strategy="localTempSwap" />
+	</cache>
+</ehcache>
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.connection.url">jdbc:mysql://192.168.4.37:3306/lakshmandb</property>
+		<property name="hibernate.connection.username">appadmin</property>
+		<property name="hibernate.connection.password">Appadmin@123</property>
+
+    
+        <property name="hbm2ddl.auto">update</property>
+		<property name="hibernate.show_sql">true</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL57Dialect</property>
+
+		<property name="cache.use_second_level_cache">true</property>
+		<property name="cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+		
+		<mapping class="com.app.Employee" />
+
+
+
+
+
+
+	</session-factory>
+</hibernate-configuration>
+
+
+
+
+
+
+
+public class HibernateUtil {
+	private static final SessionFactory sessionFactory;
+
+	static {
+		try {
+			Configuration configuration = new Configuration();
+			configuration.configure();
+			ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+					.applySettings(configuration.getProperties()).build();
+			sessionFactory = new Configuration().configure().buildSessionFactory(serviceRegistry);
+		} catch (Throwable ex) {
+			System.err.println("Session Factory could not be created." + ex);
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
+
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+}
+
+
+@Entity
+@Table(name = "STUDENT")
+@Cache(usage=CacheConcurrencyStrategy.READ_ONLY, region="student")
+public class Student implements Serializable {
+
+	private static final long serialVersionUID = 6832006422622219737L;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(name = "NAME", nullable = false)
+	private String name;
+
+	@Column(name = "ENTERING_DATE", nullable = false)
+	private Date enteringDate;
+
+	@Column(name = "NATIONALITY", nullable = false)
+	private String nationality;
+
+	@Column(name = "CODE", nullable = false)
+	private String code;
+
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM "classpath://org/hibernate/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.username">javabycode</property>
+        <property name="hibernate.connection.password">mypassword</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/javabycode</property>		
+		<property name="format_sql">false</property>        
+		<property name="hibernate.show_sql">true</property>
+
+		<property name="hibernate.current_session_context_class">thread</property>		
+		<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>
+
+		<!-- For singleton factory -->
+		<!-- <property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</property>
+		 -->
+
+		 <!-- enable second level cache and query cache -->
+		 <property name="hibernate.cache.use_second_level_cache">true</property>
+		 <property name="hibernate.cache.use_query_cache">true</property>
+ 		 <property name="net.sf.ehcache.configurationResourceName">/myehcache.xml</property>
+
+		<mapping class="com.javabycode.hibernate.model.Student" />
+	</session-factory>
+</hibernate-configuration>
