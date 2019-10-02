@@ -1,0 +1,16 @@
+body {
+    background-color: lightblue;
+    border-style: dotted;
+}
+
+h2 {
+    color: Blue;
+    text-align: left;
+}
+
+p {
+    font-family: verdana;
+    font-size: 20px;
+    font-color: Red;
+}
+
