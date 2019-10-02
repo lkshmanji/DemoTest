@@ -1,0 +1,97 @@
+Maven Dependencies required for Configuring Connection pool
+===========================================================
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>5.2.6.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>5.2.6.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc14</artifactId>
+			<version>10.1</version>
+		</dependency>
+		<dependency>
+			<groupId>c3p0</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.1.2</version>
+		</dependency>
+	</dependencies>
+=============================c3p0===============================================
+
+<hibernate-configuration>
+ <session-factory>
+  <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+  <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/myschema</property>
+  <property name="hibernate.connection.username">user</property>
+  <property name="hibernate.connection.password">password</property>
+  <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+  <property name="show_sql">true</property>
+  
+  <property name="hibernate.c3p0.min_size">5</property>
+  <property name="hibernate.c3p0.max_size">20</property>
+  <property name="hibernate.c3p0.timeout">300</property>
+  <property name="hibernate.c3p0.max_statements">50</property>
+  <property name="hibernate.c3p0.idle_test_period">3000</property>
+  
+  . . . .
+</session-factory>
+
+================================DBCP=============================================
+<hibernate-configuration>
+ <session-factory>
+  <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+  <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/myschema</property>
+  <property name="hibernate.connection.username">user</property>
+  <property name="hibernate.connection.password">password</property>
+  <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+  <property name="show_sql">true</property>
+  
+  <property name="hibernate.dbcp.initialSize">8</property>
+  <property name="hibernate.dbcp.maxActive">20</property>
+  <property name="hibernate.dbcp.maxIdle">20</property>
+  <property name="hibernate.dbcp.minIdle">0</property>
+  
+  . . . .
+</session-factory>
+========================================JNDI========================================
+<hibernate-configuration>
+    <session-factory>
+        <property name="connection.datasource">java:myDataSource</property>
+    </session-factory>
+</hibernate-configuration>
+====================================================================================
+
+Add below details in Servers - > context.xml
+===================================================================================
+ 		<Resource name="jdbc/myDataSource" 
+			  auth="Container"
+			  type="javax.sql.DataSource"              
+			  username="test"
+			  password="test"
+			  driverClassName="com.mysql.jdbc.Driver"
+			  url="jdbc:oracle:thin:@localhost:1521/XE"
+			  maxActive="10"
+			  maxIdle="10"
+			  maxWaitMillis="10000"
+			  
+		 />
+=======================================================================================
+Add below details in web.xml file
+=======================================================================================
+<resource-ref>
+ <description>This is a reference to the global Resource for MySQL database connetion.</description>
+ <res-ref-name>jdbc/myDataSource</res-ref-name>
+ <res-type>javax.sql.DataSource</res-type>
+ <res-auth>Container</res-auth>
+</resource-ref>
+==============================================================================================
+
+
+
+
